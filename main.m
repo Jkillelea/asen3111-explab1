@@ -1,15 +1,10 @@
 clear all; clc;
 
-% file descriptors for the console
-STDOUT = 1;
-STDERR = 2;
-
-% get filenames
+% get filenames for the different test cases
 cylinders = dir('../data/*Cylinder*.csv');
 airfoils  = dir('../data/*Airfoil*.csv');
 
-n_airfoils = length(airfoils);
-
+% generate figures for 15 m/s and 25 m/s (we can select which one we want later)
 fig_v15 = figure; hold on;
 title('15 m/s');
 fig_v25 = figure; hold on;
@@ -20,7 +15,7 @@ for i = 1:length(cylinders)
   filename = cylinders(i).name;
   try
     data = load_csv(['../data/' filename], 1, 0);
-  catch exception
+  catch
     fprintf('[WARNING] Unable to parse file %s. Continuing...\n', filename);
   end
 
@@ -32,6 +27,7 @@ for i = 1:length(cylinders)
   else
     fprintf('[WARNING] Expected airspeed of either 15 or 25, found %d in file %s.\n', ...
      round(mean(data.airspeed)), filename);
+     continue
   end
 
   x = data.probe_x;
