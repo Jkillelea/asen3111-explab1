@@ -12,7 +12,7 @@ function data = load_csv(filename, R, C)
                 'probe_x',                raw_data(:, 27), ...
                 'probe_y',                raw_data(:, 28));
 
-  % take averages of all the points (20 single points instead of 20 points with 500 samples each)
+  % take averages of all the points (20 single points instead of 500 samples each at 20 locations)
   data.atmo_pressure          = avg_vec(data.atmo_pressure);
   data.atmo_temperature       = avg_vec(data.atmo_temperature);
   data.atmo_density           = avg_vec(data.atmo_density);
