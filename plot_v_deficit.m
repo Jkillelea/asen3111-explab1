@@ -12,7 +12,6 @@ for i = 1:length(files)
     data = load_csv(['../data/', filename], 1, 0);
   catch err
     warning('Unable to parse file %s. Continuing...\n', filename);
-    disp(err.message);
     continue
   end
 
@@ -24,19 +23,32 @@ for i = 1:length(files)
   % calculate velocity deficit
   q = data.aux_dynamic_pressure;
   v = sqrt(2.*q/rho);
-  deficit = airspeed - v;
+  deficit = v - airspeed; % a negative number
+
+  % find the maximum deficit
+  max_deficit = min(deficit); % negative number
+  y_deficit = data.probe_y(deficit == max_deficit);
+
+  % where we've recovered 95% of freestream
+  freestream   = deficit(find(deficit < 0.05*min(deficit), 1, 'last')); % basically where it's recovered to freestream
+  y_freestream = data.probe_y(deficit == freestream);
+
+  half_width = abs(y_freestream - y_deficit);
 
   % Generate a title
-  titlestr = '';
+  titlestr = '%s: x = %.2f mm, v = %.0f m/s, delta = %.2f mm';
   if contains(filename, 'Cylinder')
-    titlestr = sprintf('%s - x = %.2f mm, v = %.2f m/s', 'Cylinder', xpos, airspeed);
+    titlestr = sprintf(titlestr, 'Cylinder', xpos, airspeed, half_width);
   elseif contains(filename, 'Airfoil')
-    titlestr = sprintf('%s - x = %.2f mm, v = %.2f m/s', 'Airfoil', xpos, airspeed);
+    titlestr = sprintf(titlestr, 'Airfoil',  xpos, airspeed, half_width);
   end
 
   % plot and save
   f = figure; hold on; grid on;
   scatter(deficit, data.probe_y);
+  plot(max_deficit, y_deficit, 'ro');
+  plot(freestream, y_freestream, 'ro');
+  plot([max_deficit, freestream], [y_deficit, y_freestream]);
 
   title(titlestr);
   ylabel('y-axis (mm)');
