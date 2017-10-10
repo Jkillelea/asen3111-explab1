@@ -1,6 +1,7 @@
 % plot velocity deficit for each test case
 clear
 clc
+close all
 
 % get filenames
 files = dir('../data/*.csv');
@@ -23,14 +24,14 @@ for i = 1:length(files)
   % calculate velocity deficit
   q = data.aux_dynamic_pressure;
   v = sqrt(2.*q/rho);
-  deficit = v - airspeed; % a negative number
+  deficit = airspeed - v; % a negative number
 
   % find the maximum deficit
-  max_deficit = min(deficit); % negative number
+  max_deficit = max(deficit); % negative number
   y_deficit = data.probe_y(deficit == max_deficit);
 
-  % where we've recovered 95% of freestream
-  freestream   = deficit(find(deficit < 0.05*min(deficit), 1, 'last')); % basically where it's recovered to freestream
+  % % where we've recovered 95% of freestream
+  freestream   = deficit(find(((airspeed - deficit) / airspeed) <= 0.95, 1, 'first')); % basically where it's recovered to freestream
   y_freestream = data.probe_y(deficit == freestream);
 
   half_width = abs(y_freestream - y_deficit);
@@ -46,8 +47,8 @@ for i = 1:length(files)
   % plot and save
   f = figure; hold on; grid on;
   scatter(deficit, data.probe_y);
-  plot(max_deficit, y_deficit, 'ro');
-  plot(freestream, y_freestream, 'ro');
+  plot(max_deficit, y_deficit,    'ro');
+  plot(freestream,  y_freestream, 'ro');
   plot([max_deficit, freestream], [y_deficit, y_freestream]);
 
   title(titlestr);
