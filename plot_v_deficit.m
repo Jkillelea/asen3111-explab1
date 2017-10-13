@@ -41,7 +41,7 @@ for i = 1:length(files)
     titlestr = sprintf(titlestr, 'Cylinder', xpos, airspeed, half_width);
   elseif contains(filename, 'Airfoil')
     titlestr = sprintf(titlestr, 'Airfoil',  xpos, airspeed, half_width);
-	end
+  end
 
   % plot and save
   f = figure; hold on; grid on;
