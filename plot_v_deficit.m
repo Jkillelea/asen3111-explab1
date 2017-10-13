@@ -24,37 +24,39 @@ for i = 1:length(files)
   % calculate velocity deficit
   q = data.aux_dynamic_pressure;
   v = sqrt(2.*q/rho);
+  y = data.probe_y;
   deficit = airspeed - v; % a negative number
 
-  % find the maximum deficit
-  max_deficit = max(deficit); % negative number
-  y_deficit   = data.probe_y(deficit == max_deficit);
+	% fit the data to a curve
+  spline_fit = fit(y, deficit, 'smoothingspline');
+  dy         = 0.01;
+  y_line     = min(y):dy:max(y);
+  deficit_line = feval(spline_fit, y_line);
 
-  % % where we've recovered 95% of freestream
-  freestream   = deficit(find(((airspeed - deficit) / airspeed) <= 0.95, 1, 'first')); % basically where it's recovered to freestream
-  y_freestream = data.probe_y(deficit == freestream);
-
-  half_width = abs(y_freestream - y_deficit);
+  [half_width, y1, y2, d1, d2] = find_half_width(deficit_line, y_line);
 
   % Generate a title
-  titlestr = '%s: x = %.2f mm, v = %.0f m/s, delta = %.2f mm';
+  titlestr = '%s: x = %.2f mm, v = %.0f m/s, delta = %.1f mm';
   if contains(filename, 'Cylinder')
     titlestr = sprintf(titlestr, 'Cylinder', xpos, airspeed, half_width);
   elseif contains(filename, 'Airfoil')
     titlestr = sprintf(titlestr, 'Airfoil',  xpos, airspeed, half_width);
-  end
+	end
 
   % plot and save
   f = figure; hold on; grid on;
   scatter(deficit, data.probe_y);
-  plot(max_deficit, y_deficit,    'ro');
-  plot(freestream,  y_freestream, 'ro');
-  plot([max_deficit, freestream], [y_deficit, y_freestream]);
+  plot(deficit_line, y_line);
+  plot(d1, y1, 'ro');
+  plot(d2, y2, 'ro');
+  plot([d1, d2], [y1, y2], 'r');
 
-  title(titlestr);
+
+	title(titlestr);
   ylabel('y-axis (mm)');
   xlabel('Velocity deficit (m/s)');
 
   print(f, '-dpng', ['../graphs/', filename, '.png']);
-  close(f);
+	close(f);
+
 end
