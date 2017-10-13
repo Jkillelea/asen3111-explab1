@@ -12,7 +12,7 @@ for i = 1:length(files)
   try
     data = load_csv(['../data/', filename], 1, 0);
   catch err
-    warning('Unable to parse file %s. Continuing...\n', filename);
+    warning('Unable to parse file %s. Skipping...\n', filename);
     continue
   end
 
@@ -28,7 +28,7 @@ for i = 1:length(files)
 
   % find the maximum deficit
   max_deficit = max(deficit); % negative number
-  y_deficit = data.probe_y(deficit == max_deficit);
+  y_deficit   = data.probe_y(deficit == max_deficit);
 
   % % where we've recovered 95% of freestream
   freestream   = deficit(find(((airspeed - deficit) / airspeed) <= 0.95, 1, 'first')); % basically where it's recovered to freestream
