@@ -13,6 +13,7 @@ hw_vs_x_afl_25 = zeros(length(files), 2); % 25 m/s
 
 for i = 1:length(files)
   filename = files(i).name;
+  % load the file
   try
     data = load_csv(['../data/', filename], 1, 0);
   catch err
@@ -37,8 +38,10 @@ for i = 1:length(files)
   y_line       = min(y):dy:max(y);
   deficit_line = feval(spline_fit, y_line);
 
+  % calculate half width
   [half_width, y1, y2, d1, d2] = find_half_width(deficit_line, y_line);
 
+  % find out which variable to store it in
   if contains(filename, 'Cylinder')
     if round(airspeed) == 15
       hw_vs_x_cyl_15(i, :) = [xpos, half_width];
