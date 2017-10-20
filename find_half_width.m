@@ -1,4 +1,4 @@
-function [hw, y1, y2, d1, d2] = find_half_width(deficit, y) 
+function [hw, y1, y2, d1, d2] = find_half_width(deficit, y)
   % find the half width
   idx1 = find(deficit/max(deficit) > 0.5, 1, 'first');
   idx2 = find(deficit/max(deficit) > 0.5, 1, 'last');
