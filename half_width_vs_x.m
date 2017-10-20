@@ -19,11 +19,11 @@ def_cyl_25 = zeros(length(files), 2); % 25 m/s
 def_afl_15 = zeros(length(files), 2); % airfoil, 15 m/s
 def_afl_25 = zeros(length(files), 2); % 25 m/s
 
-
+% process every file
 for i = 1:length(files)
   filename = files(i).name;
 
-  % load the file
+  % load or skip
   try
     data = load_csv(['../data/', filename], 1, 0);
   catch err
@@ -42,8 +42,8 @@ for i = 1:length(files)
   y = data.probe_y;
   deficit = airspeed - v; % a negative number
 
-  % fit the data to a curve
-  spline_fit   = fit(y, deficit, 'smoothingspline');
+  % fit the data to a curve. Ignore points that might be in the boundary layer
+  spline_fit   = fit(y(2:end-1), deficit(2:end-1), 'smoothingspline');
   dy           = 0.01;
   y_line       = min(y):dy:max(y);
   deficit_line = feval(spline_fit, y_line);
@@ -100,7 +100,7 @@ def_afl_15 = sortrows(def_afl_15);
 def_cyl_25 = sortrows(def_cyl_25);
 def_cyl_15 = sortrows(def_cyl_15);
 
-N_powers = 4;
+N_powers = 4; % for polyfit
 
 f = figure; hold on; grid on;
 scatter(hw_afl_25(:, 1), hw_afl_25(:, 2));

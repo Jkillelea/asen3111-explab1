@@ -28,7 +28,7 @@ for i = 1:length(files)
   deficit = airspeed - v; % a negative number
 
 	% fit the data to a curve
-  spline_fit = fit(y, deficit, 'smoothingspline');
+  spline_fit = fit(y(2:end-1), deficit(2:end-1), 'smoothingspline');
   dy         = 0.01;
   y_line     = min(y):dy:max(y);
   deficit_line = feval(spline_fit, y_line);
