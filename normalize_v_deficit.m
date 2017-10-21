@@ -2,97 +2,78 @@ clear
 clc
 close all
 
-airfoils  = dir('../data/*Airfoil*.csv');
-cylinders = dir('../data/*Cylinder*.csv');
+airfoils15  = dir('../data/*15*Airfoil*.csv');
+airfoils25  = dir('../data/*25*Airfoil*.csv');
+cylinders15 = dir('../data/*15*Cylinder*.csv');
+cylinders25 = dir('../data/*25*Cylinder*.csv');
 
 % airfoils first
 f = figure; hold on; grid on;
-title('Normalized Airfoil Velocity Deficit');
+title('Normalized Airfoil Velocity Deficit (15 m/s)');
 ylabel('y position / half-width (mm/mm)');
 xlabel('Normalized velocity deficit (m/s)');
-
-for i = 1:length(airfoils)
-  filename = airfoils(i).name;
-
+for i = 1:length(airfoils15)
+  filename = airfoils15(i).name;
   try
     data = load_csv(['../data/', filename], 1, 0);
   catch err
     warning('Unable to parse file %s. Skipping...\n', filename);
     continue
   end
-
-  % pull out the requisite data
-  airspeed = mean(data.airspeed);
-  rho      = mean(data.atmo_density);
-  xpos     = mean(data.probe_x);
-
-  % calculate velocity deficit
-  q = data.aux_dynamic_pressure;
-  v = sqrt(2.*q/rho);
-  deficit = airspeed - v; % a negative number
-
-  % find the maximum deficit
-  max_deficit = max(deficit); % negative number
-  y_deficit   = data.probe_y(deficit == max_deficit);
-
-  % % where we've recovered 95% of freestream
-  freestream   = deficit(find(((airspeed - deficit) / airspeed) <= 0.95, 1, 'first')); % basically where it's recovered to freestream
-  y_freestream = data.probe_y(deficit == freestream);
-
-  half_width = abs(y_freestream - y_deficit);
-
-  % normalize velocity deficit and y, make some more plots
-  normalized_deficit = deficit      / max_deficit;
-  normalized_y       = data.probe_y / half_width;
-
+  [normalized_deficit, normalized_y] = normalize_data(data);
   plot(normalized_deficit, normalized_y);
 end
+print(f, '-dpng', ['../graphs/normalized_airfoil15.png'])
 
-print(f, '-dpng', ['../graphs/normalized_airfoil.png'])
+f = figure; hold on; grid on;
+title('Normalized Airfoil Velocity Deficit (25 m/s)');
+ylabel('y position / half-width (mm/mm)');
+xlabel('Normalized velocity deficit (m/s)');
+for i = 1:length(airfoils25)
+  filename = airfoils25(i).name;
+  try
+    data = load_csv(['../data/', filename], 1, 0);
+  catch err
+    warning('Unable to parse file %s. Skipping...\n', filename);
+    continue
+  end
+  [normalized_deficit, normalized_y] = normalize_data(data);
+  plot(normalized_deficit, normalized_y);
+end
+print(f, '-dpng', ['../graphs/normalized_airfoil25.png'])
 
 
 % exactly the same thing as above but for cylinders
 f = figure; hold on; grid on;
-title('Normalized Cylinder Velocity Deficit');
+title('Normalized Cylinder Velocity Deficit (15 m/s)');
 ylabel('y position / half-width (mm/mm)');
 xlabel('Normalized velocity deficit (m/s)');
-
-for i = 1:length(cylinders)
-  filename = cylinders(i).name;
-
+for i = 1:length(cylinders15)
+  filename = cylinders15(i).name;
   try
     data = load_csv(['../data/', filename], 1, 0);
   catch err
     warning('Unable to parse file %s. Skipping...\n', filename);
     continue
   end
-
-  % pull out the requisite data
-  airspeed = mean(data.airspeed);
-  rho      = mean(data.atmo_density);
-  xpos     = mean(data.probe_x);
-
-  % calculate velocity deficit
-  q = data.aux_dynamic_pressure;
-  v = sqrt(2.*q/rho);
-  deficit = airspeed - v; % a negative number
-
-  % find the maximum deficit
-  max_deficit = max(deficit); % negative number
-  y_deficit   = data.probe_y(deficit == max_deficit);
-
-  % % where we've recovered 95% of freestream
-  freestream   = deficit(find(((airspeed - deficit) / airspeed) <= 0.95, 1, 'first')); % basically where it's recovered to freestream
-  y_freestream = data.probe_y(deficit == freestream);
-
-  half_width = abs(y_freestream - y_deficit);
-
-  % normalize velocity deficit and y, make some more plots
-  normalized_deficit = deficit      / max_deficit;
-  normalized_y       = data.probe_y / half_width;
-
+  [normalized_deficit, normalized_y] = normalize_data(data);
   plot(normalized_deficit, normalized_y);
 end
+print(f, '-dpng', ['../graphs/normalized_cylinder15.png'])
 
-print(f, '-dpng', ['../graphs/normalized_cylinder.png'])
-
+f = figure; hold on; grid on;
+title('Normalized Cylinder Velocity Deficit (25 m/s)');
+ylabel('y position / half-width (mm/mm)');
+xlabel('Normalized velocity deficit (m/s)');
+for i = 1:length(cylinders25)
+  filename = cylinders25(i).name;
+  try
+    data = load_csv(['../data/', filename], 1, 0);
+  catch err
+    warning('Unable to parse file %s. Skipping...\n', filename);
+    continue
+  end
+  [normalized_deficit, normalized_y] = normalize_data(data);
+  plot(normalized_deficit, normalized_y);
+end
+print(f, '-dpng', ['../graphs/normalized_cylinder25.png'])
