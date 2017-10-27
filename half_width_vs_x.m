@@ -10,6 +10,10 @@ airfoils25  = dir('../data/*25*Airfoil*.csv');
 cylinders15 = dir('../data/*15*Cylinder*.csv');
 cylinders25 = dir('../data/*25*Cylinder*.csv');
 graphs_folder = '../graphs/';
+[err, msg, msgid] = mkdir(graphs_folder);
+if err ~= 0
+  warning(msg)
+end
 
 [err, msg, msgid] = mkdir(graphs_folder);
 if err ~= 0
@@ -56,10 +60,11 @@ for files = {airfoils15, airfoils25, cylinders15, cylinders25}
   % Generate a title
   if contains(files(1).name, 'Cylinder')
     titlestr = sprintf('Cylinder - %.0f m/s - ', airspeed);
+    filestr = sprintf('cylinder_%.0f', airspeed);
   elseif contains(files(1).name, 'Airfoil')
     titlestr = sprintf('Airfoil - %.0f m/s - ', airspeed);
+    filestr = sprintf('airfoil_%.0f', airspeed);
   end
-
 
   % create best fit lines for both datasets
   opts = fitoptions('Method', 'SmoothingSpline', 'SmoothingParam', 0.001);
@@ -76,17 +81,19 @@ for files = {airfoils15, airfoils25, cylinders15, cylinders25}
   def_line   = feval(spline_fit, x_line);
 
   % make some pretty plots
-  figure; hold on; grid on;
+  f = figure; hold on; grid on;
   xlabel('x-location (mm)');
   ylabel('half-width (mm)');
   title([titlestr, 'half-width vs x location']);
   scatter(x, hw);
   plot(x_line, hw_line);
+  print(f, '-dpng', [graphs_folder, filestr, '_hw']);
 
-  figure; hold on; grid on;
+  f = figure; hold on; grid on;
   xlabel('x-location (mm)');
   ylabel('maximum velocity deficit (m/s)');
   title([titlestr, 'max velocity deficit vs x location']);
   scatter(x, def);
   plot(x_line, def_line);
+  print(f, '-dpng', [graphs_folder, filestr, '_deficit']);
 end
