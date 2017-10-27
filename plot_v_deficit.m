@@ -6,6 +6,10 @@ close all
 % get filenames
 files = dir('../data/*.csv');
 graphs_folder = '../graphs/';
+[err, msg, msgid] = mkdir(graphs_folder);
+if err ~= 0
+  warning(msg)
+end
 
 % plot the velocity deficit for each
 for i = 1:length(files)
@@ -21,7 +25,7 @@ for i = 1:length(files)
   q = data.aux_dynamic_pressure;
   v = sqrt(2.*q/rho);
   y = data.probe_y;
-  deficit = airspeed - v; % a negative number
+  deficit = airspeed - v;
 
 	% fit the data to a curve
   spline_fit = fit(y(2:end-1), deficit(2:end-1), 'smoothingspline');
@@ -47,12 +51,10 @@ for i = 1:length(files)
   plot(d2, y2, 'ro');
   plot([d1, d2], [y1, y2], 'r');
 
-
 	title(titlestr);
   ylabel('y-axis (mm)');
   xlabel('Velocity deficit (m/s)');
 
   print(f, '-dpng', [graphs_folder, filename, '.png']);
 	close(f);
-
 end
