@@ -5,172 +5,88 @@ clear
 close all
 clc
 
-files = dir('../data/*.csv');
+airfoils15  = dir('../data/*15*Airfoil*.csv');
+airfoils25  = dir('../data/*25*Airfoil*.csv');
+cylinders15 = dir('../data/*15*Cylinder*.csv');
+cylinders25 = dir('../data/*25*Cylinder*.csv');
+graphs_folder = '../graphs/';
 
-% half_width
-hw_cyl_15 = zeros(length(files), 2); % cylinder, 15 m/s
-hw_cyl_25 = zeros(length(files), 2); % 25 m/s
-hw_afl_15 = zeros(length(files), 2); % airfoil, 15 m/s
-hw_afl_25 = zeros(length(files), 2); % 25 m/s
-
-% deficit
-def_cyl_15 = zeros(length(files), 2); % cylinder, 15 m/s
-def_cyl_25 = zeros(length(files), 2); % 25 m/s
-def_afl_15 = zeros(length(files), 2); % airfoil, 15 m/s
-def_afl_25 = zeros(length(files), 2); % 25 m/s
-
-% process every file
-for i = 1:length(files)
-  filename = files(i).name;
-
-  % load or skip
-  try
-    data = load_csv(['../data/', filename], 1, 0);
-  catch err
-    warning('Unable to parse file %s. Skipping...\n', filename);
-    continue
-  end
-
-  % pull out the requisite data
-  airspeed = mean(data.airspeed);
-  rho      = mean(data.atmo_density);
-  xpos     = mean(data.probe_x);
-
-  % calculate velocity deficit
-  q = data.aux_dynamic_pressure;
-  v = sqrt(2.*q/rho);
-  y = data.probe_y;
-  deficit = airspeed - v; % a negative number
-
-  % fit the data to a curve. Ignore points that might be in the boundary layer
-  spline_fit   = fit(y(2:end-1), deficit(2:end-1), 'smoothingspline');
-  dy           = 0.01;
-  y_line       = min(y):dy:max(y);
-  deficit_line = feval(spline_fit, y_line);
-
-  max_deficit = max(abs(deficit_line));
-
-  % calculate half width
-  [half_width, y1, y2, d1, d2] = find_half_width(deficit_line, y_line);
-
-  % find out which variable to store it in
-  if contains(filename, 'Cylinder')
-    if round(airspeed) == 15
-      hw_cyl_15(i, :) = [xpos, half_width];
-      def_cyl_15(i, :) = [xpos, max_deficit];
-    elseif round(airspeed) == 25
-      hw_cyl_25(i, :) = [xpos, half_width];
-      def_cyl_25(i, :) = [xpos, max_deficit];
-    else
-      warning('Couldnt find apropriate place for data from file %s\n', filename);
-    end
-  else
-    if round(airspeed) == 15
-      hw_afl_15(i, :) = [xpos, half_width];
-      def_afl_15(i, :) = [xpos, max_deficit];
-    elseif round(airspeed) == 25
-      hw_afl_25(i, :) = [xpos, half_width];
-      def_afl_25(i, :) = [xpos, max_deficit];
-    else
-      warning('Couldnt find apropriate place for data from file %s\n', filename);
-    end
-  end
+[err, msg, msgid] = mkdir(graphs_folder);
+if err ~= 0
+  warning(msg)
 end
 
-% prune empty rows, since we allocated enough space to put every data set into
-% one of these variables.
-hw_afl_25 = hw_afl_25((hw_afl_25(:, 1) ~= 0), :);
-hw_afl_15 = hw_afl_15((hw_afl_15(:, 1) ~= 0), :);
-hw_cyl_25 = hw_cyl_25((hw_cyl_25(:, 1) ~= 0), :);
-hw_cyl_15 = hw_cyl_15((hw_cyl_15(:, 1) ~= 0), :);
+% each set of data
+for files = {airfoils15, airfoils25, cylinders15, cylinders25}
+  files   = cell2mat(files);
+  hw_v_x  = zeros(length(files), 2); % 2 cols
+  def_v_x = zeros(length(files), 2); % 2 cols
 
-def_afl_25 = def_afl_25((def_afl_25(:, 1) ~= 0), :);
-def_afl_15 = def_afl_15((def_afl_15(:, 1) ~= 0), :);
-def_cyl_25 = def_cyl_25((def_cyl_25(:, 1) ~= 0), :);
-def_cyl_15 = def_cyl_15((def_cyl_15(:, 1) ~= 0), :);
+  for i = 1:length(files) % each file
+    filename = files(i).name;
+    data     = load_csv(['../data/', filename], 1, 0);
 
-% sort into order based on x (ascending)
-hw_afl_25 = sortrows(hw_afl_25);
-hw_afl_15 = sortrows(hw_afl_15);
-hw_cyl_25 = sortrows(hw_cyl_25);
-hw_cyl_15 = sortrows(hw_cyl_15);
+    airspeed = mean(data.airspeed);
+    rho      = mean(data.atmo_density);
+    x        = mean(data.probe_x);
 
-def_afl_25 = sortrows(def_afl_25);
-def_afl_15 = sortrows(def_afl_15);
-def_cyl_25 = sortrows(def_cyl_25);
-def_cyl_15 = sortrows(def_cyl_15);
+    % calculate velocity deficit
+    q = data.aux_dynamic_pressure;
+    v = sqrt(2.*q/rho);
+    y = data.probe_y;
+    deficit = airspeed - v; % a negative number
 
-N_powers = 4; % for polyfit
+    % fit the data to a curve. Ignore points that might be in the boundary layer
+    spline_fit   = fit(y(2:end-1), deficit(2:end-1), 'smoothingspline');
+    dy           = 0.01;
+    y_line       = min(y):dy:max(y);
+    deficit_line = feval(spline_fit, y_line);
+    max_deficit  = max(abs(deficit_line));
 
-% I'm sorry Lord, please forgive me for the sins I am about to commit
-f = figure; hold on; grid on;
-scatter(hw_afl_25(:, 1), hw_afl_25(:, 2));
-title('Airfoil at 25 m/s');
-xlabel('distance behind body (mm)');
-ylabel('size of half width (mm)');
-p = polyfit(hw_afl_25(:, 1), hw_afl_25(:, 2), N_powers);
-y = mkpolyline(hw_afl_25(:, 1), p);
-plot(hw_afl_25(:, 1), y);
+    [half_width, y1, y2, d1, d2] = find_half_width(deficit_line, y_line);
 
-f = figure; hold on; grid on;
-scatter(hw_afl_15(:, 1), hw_afl_15(:, 2));
-title('Airfoil at 15 m/s');
-xlabel('distance behind body (mm)');
-ylabel('size of half width (mm)');
-p = polyfit(hw_afl_15(:, 1), hw_afl_15(:, 2), N_powers);
-y = mkpolyline(hw_afl_15(:, 1), p);
-plot(hw_afl_15(:, 1), y);
+    hw_v_x(i, :) = [x, half_width];
+    def_v_x(i, :) = [x, max_deficit];
+  end
 
-f = figure; hold on; grid on;
-scatter(hw_cyl_25(:, 1), hw_cyl_25(:, 2));
-title('Cylinder at 25 m/s');
-xlabel('distance behind body (mm)');
-ylabel('size of half width (mm)');
-p = polyfit(hw_cyl_25(:, 1), hw_cyl_25(:, 2), N_powers);
-y = mkpolyline(hw_cyl_25(:, 1), p);
-plot(hw_cyl_25(:, 1), y);
+  % sort by x location
+  hw_v_x  = sortrows(hw_v_x);
+  def_v_x = sortrows(def_v_x);
 
-f = figure; hold on; grid on;
-scatter(hw_cyl_15(:, 1), hw_cyl_15(:, 2));
-title('Cylinder at 15 m/s');
-xlabel('distance behind body (mm)');
-ylabel('size of half width (mm)');
-p = polyfit(hw_cyl_15(:, 1), hw_cyl_15(:, 2), N_powers);
-y = mkpolyline(hw_cyl_15(:, 1), p);
-plot(hw_cyl_15(:, 1), y);
+  % Generate a title
+  if contains(files(1).name, 'Cylinder')
+    titlestr = sprintf('Cylinder - %.0f m/s - ', airspeed);
+  elseif contains(files(1).name, 'Airfoil')
+    titlestr = sprintf('Airfoil - %.0f m/s - ', airspeed);
+  end
 
-f = figure; hold on; grid on;
-scatter(def_afl_25(:, 1), def_afl_25(:, 2));
-title('Airfoil at 25 m/s');
-xlabel('distance behind body (mm)');
-ylabel('max velocity deficit (m/s)');
-p = polyfit(def_afl_25(:, 1), def_afl_25(:, 2), N_powers);
-y = mkpolyline(def_afl_25(:, 1), p);
-plot(def_afl_25(:, 1), y);
 
-f = figure; hold on; grid on;
-scatter(def_afl_15(:, 1), def_afl_15(:, 2));
-title('Airfoil at 15 m/s');
-xlabel('distance behind body (mm)');
-ylabel('max velocity deficit (m/s)');
-p = polyfit(def_afl_15(:, 1), def_afl_15(:, 2), N_powers);
-y = mkpolyline(def_afl_15(:, 1), p);
-plot(def_afl_15(:, 1), y);
+  % create best fit lines for both datasets
+  opts = fitoptions('Method', 'SmoothingSpline', 'SmoothingParam', 0.001);
+  x          = hw_v_x(:, 1);
+  hw         = hw_v_x(:, 2);
+  spline_fit = fit(x, hw, 'SmoothingSpline', opts);
+  x_line     = min(x):max(x);
+  hw_line    = feval(spline_fit, x_line);
 
-f = figure; hold on; grid on;
-scatter(def_cyl_25(:, 1), def_cyl_25(:, 2));
-title('Cylinder at 25 m/s');
-xlabel('distance behind body (mm)');
-ylabel('max velocity deficit (m/s)');
-p = polyfit(def_cyl_25(:, 1), def_cyl_25(:, 2), N_powers);
-y = mkpolyline(def_cyl_25(:, 1), p);
-plot(def_cyl_25(:, 1), y);
+  x          = def_v_x(:, 1);
+  def        = def_v_x(:, 2);
+  spline_fit = fit(x, def, 'SmoothingSpline', opts);
+  x_line     = min(x):max(x);
+  def_line   = feval(spline_fit, x_line);
 
-f = figure; hold on; grid on;
-scatter(def_cyl_15(:, 1), def_cyl_15(:, 2));
-title('Cylinder at 15 m/s');
-xlabel('distance behind body (mm)');
-ylabel('max velocity deficit (m/s)');
-p = polyfit(def_cyl_15(:, 1), def_cyl_15(:, 2), N_powers);
-y = mkpolyline(def_cyl_15(:, 1), p);
-plot(def_cyl_15(:, 1), y);
+  % make some pretty plots
+  figure; hold on; grid on;
+  xlabel('x-location (mm)');
+  ylabel('half-width (mm)');
+  title([titlestr, 'half-width vs x location']);
+  scatter(x, hw);
+  plot(x_line, hw_line);
+
+  figure; hold on; grid on;
+  xlabel('x-location (mm)');
+  ylabel('maximum velocity deficit (m/s)');
+  title([titlestr, 'max velocity deficit vs x location']);
+  scatter(x, def);
+  plot(x_line, def_line);
+end
