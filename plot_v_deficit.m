@@ -5,16 +5,12 @@ close all
 
 % get filenames
 files = dir('../data/*.csv');
+graphs_folder = '../graphs/';
 
 % plot the velocity deficit for each
 for i = 1:length(files)
   filename = files(i).name;
-  try
-    data = load_csv(['../data/', filename], 1, 0);
-  catch err
-    warning('Unable to parse file %s. Skipping...\n', filename);
-    continue
-  end
+  data = load_csv(['../data/', filename], 1, 0);
 
   % pull out the requisite data
   airspeed = mean(data.airspeed);
@@ -56,7 +52,7 @@ for i = 1:length(files)
   ylabel('y-axis (mm)');
   xlabel('Velocity deficit (m/s)');
 
-  print(f, '-dpng', ['../graphs/', filename, '.png']);
+  print(f, '-dpng', [graphs_folder, filename, '.png']);
 	close(f);
 
 end

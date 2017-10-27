@@ -1,4 +1,4 @@
-function [ normalized_deficit, normalized_y ] = normalize_data(data)
+function [normalized_deficit, normalized_y] = normalize_data(data)
   % pull out the requisite data
   airspeed = mean(data.airspeed);
   rho      = mean(data.atmo_density);

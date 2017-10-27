@@ -102,6 +102,7 @@ def_cyl_15 = sortrows(def_cyl_15);
 
 N_powers = 4; % for polyfit
 
+% I'm sorry Lord, please forgive me for the sins I am about to commit
 f = figure; hold on; grid on;
 scatter(hw_afl_25(:, 1), hw_afl_25(:, 2));
 title('Airfoil at 25 m/s');
