@@ -2,7 +2,6 @@ function [normalized_deficit, normalized_y] = normalize_data(data)
   % pull out the requisite data
   airspeed = mean(data.airspeed);
   rho      = mean(data.atmo_density);
-  xpos     = mean(data.probe_x);
 
   % calculate velocity deficit
   q = data.aux_dynamic_pressure;
@@ -19,9 +18,9 @@ function [normalized_deficit, normalized_y] = normalize_data(data)
   max_deficit = max(abs(deficit_line));
 
   % calculate half width
-  [half_width, y1, y2, d1, d2] = find_half_width(deficit_line, y_line);
+  [half_width, ~, ~, ~, ~] = find_half_width(deficit_line, y_line);
 
   % normalize velocity deficit and y, make some more plots
-  normalized_deficit = deficit      / max_deficit;
+  normalized_deficit = deficit / max_deficit;
   normalized_y       = y / half_width;
 end
