@@ -15,11 +15,6 @@ if err ~= 0
   warning(msg)
 end
 
-[err, msg, msgid] = mkdir(graphs_folder);
-if err ~= 0
-  warning(msg)
-end
-
 % each set of data
 for files = {airfoils15, airfoils25, cylinders15, cylinders25}
   files   = cell2mat(files);
@@ -67,7 +62,7 @@ for files = {airfoils15, airfoils25, cylinders15, cylinders25}
   end
 
   % create best fit lines for both datasets
-  opts = fitoptions('Method', 'SmoothingSpline', 'SmoothingParam', 0.001);
+  opts = fitoptions('Method', 'SmoothingSpline', 'SmoothingParam', 0.0005);
   x          = hw_v_x(:, 1);
   hw         = hw_v_x(:, 2);
   spline_fit = fit(x, hw, 'SmoothingSpline', opts);
