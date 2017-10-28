@@ -12,52 +12,29 @@ if err ~= 0
   warning(msg)
 end
 
-% airfoils first
-f = figure; hold on; grid on;
-title('Normalized Airfoil Velocity Deficit (15 m/s)');
-ylabel('y position / half-width (mm/mm)');
-xlabel('Normalized velocity deficit (m/s)');
-for i = 1:length(airfoils15)
-  filename = airfoils15(i).name;
-  data = load_csv(['../data/', filename], 1, 0);
-  [normalized_deficit, normalized_y] = normalize_data(data);
-  plot(normalized_deficit, normalized_y);
-end
-print(f, '-dpng', [graphs_folder, 'normalized_airfoil15.png'])
+for files = {airfoils15, airfoils25, cylinders15, cylinders25} % each data set
+  f = figure; hold on; grid on;
+  files = cell2mat(files);
+  for i = 1:length(files) % all files in set
+    filename = files(i).name;
+    data     = load_csv(['../data/', filename], 1, 0);
+    airspeed = mean(data.airspeed);
 
-f = figure; hold on; grid on;
-title('Normalized Airfoil Velocity Deficit (25 m/s)');
-ylabel('y position / half-width (mm/mm)');
-xlabel('Normalized velocity deficit (m/s)');
-for i = 1:length(airfoils25)
-  filename = airfoils25(i).name;
-  data = load_csv(['../data/', filename], 1, 0);
-  [normalized_deficit, normalized_y] = normalize_data(data);
-  plot(normalized_deficit, normalized_y);
-end
-print(f, '-dpng', [graphs_folder, 'normalized_airfoil25.png'])
+    [normalized_deficit, normalized_y] = normalize_data(data);
+    scatter(normalized_deficit, normalized_y, '.');
+  end
 
-% exactly the same thing as above but for cylinders
-f = figure; hold on; grid on;
-title('Normalized Cylinder Velocity Deficit (15 m/s)');
-ylabel('y position / half-width (mm/mm)');
-xlabel('Normalized velocity deficit (m/s)');
-for i = 1:length(cylinders15)
-  filename = cylinders15(i).name;
-  data = load_csv(['../data/', filename], 1, 0);
-  [normalized_deficit, normalized_y] = normalize_data(data);
-  plot(normalized_deficit, normalized_y);
-end
-print(f, '-dpng', [graphs_folder, 'normalized_cylinder15.png'])
+  % Generate a title and filename
+  if contains(files(1).name, 'Cylinder')
+    titlestr = sprintf('Cylinder Velocity Deficit (%.0f m/s)', airspeed);
+    filestr  = sprintf('normalized_cylinder%.0f', airspeed);
+  elseif contains(files(1).name, 'Airfoil')
+    titlestr = sprintf('Airfoil Velocity Deficit (%.0f m/s)', airspeed);
+    filestr  = sprintf('normalized_airfoil%.0f', airspeed);
+  end
 
-f = figure; hold on; grid on;
-title('Normalized Cylinder Velocity Deficit (25 m/s)');
-ylabel('y position / half-width (mm/mm)');
-xlabel('Normalized velocity deficit (m/s)');
-for i = 1:length(cylinders25)
-  filename = cylinders25(i).name;
-  data = load_csv(['../data/', filename], 1, 0);
-  [normalized_deficit, normalized_y] = normalize_data(data);
-  plot(normalized_deficit, normalized_y);
+  title(titlestr);
+  ylabel('y position / half-width (mm/mm)');
+  xlabel('Normalized velocity deficit (m/s)');
+  print(f, '-dpng', [graphs_folder, filestr, '.png'])
 end
-print(f, '-dpng', [graphs_folder, 'normalized_cylinder25.png'])
