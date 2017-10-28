@@ -2,26 +2,40 @@ clear
 clc
 close all
 
-airfoils15  = dir('../data/*Airfoil*.csv');
+airfoils15  = dir('../data/*15*Airfoil*.csv');
+airfoils25  = dir('../data/*25*Airfoil*.csv');
+cylinders15 = dir('../data/*15*Cylinder*.csv');
+cylinders25 = dir('../data/*25*Cylinder*.csv');
 
-for i = 1:length(airfoils15)
-  filename = airfoils15(i).name;
-  data     = load_csv(['../data/', filename], 1, 0);
+for files = {airfoils15, airfoils25, cylinders15, cylinders25}
+  files   = cell2mat(files);
+  Cd = zeros(1, length(files));
+  for i = 1:length(files)
+    filename = files(i).name;
+    data     = load_csv(['../data/', filename], 1, 0);
 
-  airspeed = mean(data.airspeed);         % m/s
-  rho      = mean(data.atmo_density);     % kg/m^3
-  q        = data.aux_dynamic_pressure;   % Pa
-  u        = sqrt(2.*q/rho);              % m/s
-  y        = data.probe_y / 1000;         % meters
-  vinf     = airspeed*ones(length(y), 1); % vector of the same length
+    airspeed = mean(data.airspeed);         % m/s
+    rho      = mean(data.atmo_density);     % kg/m^3
+    q        = data.aux_dynamic_pressure;   % Pa
+    u        = sqrt(2.*q/rho);              % m/s
+    y        = data.probe_y / 1000;         % meters
+    vinf     = airspeed*ones(length(y), 1); % vector of the same length
 
-  disp(filename);
+    if contains(filename, 'Airfoil')
+      chord = 8.89 / 100; % meters
+    elseif contains(filename, 'Cyilnder')
+      chord = 1.27 / 100; % meters
+    end
 
-  if contains(filename, 'Airfoil')
-    chord = 8.89 / 100; % meters
-  elseif contains(filename, 'Cyilnder')
-    chord = 1.27 / 100; % meters
+    Cd(i) = -2/(airspeed^2 * chord) * trapz(y, (u.^2 - vinf.*u));
   end
 
-  Cd = 2/(airspeed^2 * chord) * trapz(y, (u.^2 - vinf.*u))
+  % Generate a title
+  if contains(files(1).name, 'Cylinder')
+    str = sprintf('Cylinder - %.0f m/s', airspeed);
+  elseif contains(files(1).name, 'Airfoil')
+    str = sprintf('Airfoil - %.0f m/s', airspeed);
+  end
+
+  fprintf('%s - Cd = %f\n', str, mean(Cd));
 end
