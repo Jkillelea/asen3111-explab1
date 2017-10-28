@@ -15,6 +15,10 @@ end
 
 for files = {airfoils15, airfoils25, cylinders15, cylinders25} % each data set
   f = figure; hold on; grid on;
+  xlim([-0.1, 1.2])
+  ylim([-8, 8])
+  plot(xlim, [0, 0], ':')
+
   files = cell2mat(files);
   for i = 1:length(files) % all files in set
     filename = files(i).name;
@@ -37,5 +41,5 @@ for files = {airfoils15, airfoils25, cylinders15, cylinders25} % each data set
   title(titlestr);
   ylabel('y position / half-width (mm/mm)');
   xlabel('Normalized velocity deficit (m/s per m/s)');
-  print(f, '-dpdf', [graphs_folder, filestr, '.pdf'])
+  print(f, '-dpng', [graphs_folder, filestr])
 end
