@@ -5,7 +5,7 @@ function y = mkpolyline(x, p)
     x_i = x(i);
 
     tmp = 0;
-    N = length(p); % 4
+    N = length(p);
     for j = 1:N
       tmp = tmp + p(j)*x_i^(N-j);
     end
