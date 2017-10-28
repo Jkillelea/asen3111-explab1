@@ -56,21 +56,35 @@ for files = {airfoils15, airfoils25, cylinders15, cylinders25}
   if contains(files(1).name, 'Cylinder')
     titlestr = sprintf('Cylinder - %.0f m/s - ', airspeed);
     filestr = sprintf('cylinder_%.0f', airspeed);
+    desired_x = [90, 180, 240]; % desired x locations
+    tol = 10; % tolerance
   elseif contains(files(1).name, 'Airfoil')
     titlestr = sprintf('Airfoil - %.0f m/s - ', airspeed);
     filestr = sprintf('airfoil_%.0f', airspeed);
+    desired_x = [13, 18, 23, 28, 33, 38, 43];
+    tol = 2;
+  end
+
+  % group by how close they are to the desired x locations
+  idxs = group_into(hw_v_x(:, 1), desired_x, tol);
+  hw_v_x_reduced = zeros(length(idxs), 2);
+  def_v_x_reduced = zeros(length(idxs), 2);
+  for i = 1:length(idxs)
+    range = idxs{i};
+    hw_v_x_reduced(i, :)  = [mean(hw_v_x(range, 1)), mean(hw_v_x(range, 2))];
+    def_v_x_reduced(i, :) = [mean(def_v_x(range, 1)), mean(def_v_x(range, 2))];
   end
 
   % create best fit lines for both datasets
   opts = fitoptions('Method', 'SmoothingSpline', 'SmoothingParam', 0.0005);
-  x          = hw_v_x(:, 1);
-  hw         = hw_v_x(:, 2);
+  x          = hw_v_x_reduced(:, 1);
+  hw         = hw_v_x_reduced(:, 2);
   spline_fit = fit(x, hw, 'SmoothingSpline', opts);
   x_line     = min(x):max(x);
   hw_line    = feval(spline_fit, x_line);
 
-  x          = def_v_x(:, 1);
-  def        = def_v_x(:, 2);
+  x          = def_v_x_reduced(:, 1);
+  def        = def_v_x_reduced(:, 2);
   spline_fit = fit(x, def, 'SmoothingSpline', opts);
   x_line     = min(x):max(x);
   def_line   = feval(spline_fit, x_line);
@@ -80,15 +94,17 @@ for files = {airfoils15, airfoils25, cylinders15, cylinders25}
   xlabel('x-location (mm)');
   ylabel('half-width (mm)');
   title([titlestr, 'half-width vs x location']);
-  scatter(x, hw);
-  plot(x_line, hw_line);
+  scatter(hw_v_x(:, 1),         hw_v_x(:, 2));
+  scatter(x,                    hw,                   'r');
+  plot(   x_line,               hw_line,              'r');
   print(f, '-dpng', [graphs_folder, filestr, '_hw']);
 
   f = figure; hold on; grid on;
   xlabel('x-location (mm)');
   ylabel('maximum velocity deficit (m/s)');
   title([titlestr, 'max velocity deficit vs x location']);
-  scatter(x, def);
-  plot(x_line, def_line);
+  scatter(def_v_x(:, 1),         def_v_x(:, 2));
+  scatter(x,                     def,                   'r');
+  plot(   x_line,                def_line,              'r');
   print(f, '-dpng', [graphs_folder, filestr, '_deficit']);
 end
