@@ -1,4 +1,4 @@
-% plot velocity deficit for each test case
+% plot velocity deficit with half width for each test case
 clear
 clc
 close all

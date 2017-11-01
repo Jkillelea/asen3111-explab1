@@ -1,3 +1,4 @@
+% calculate Cd for each of the test articles at each speed.
 clear
 clc
 close all

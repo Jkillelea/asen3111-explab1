@@ -1,4 +1,11 @@
 function [normalized_deficit, normalized_y] = normalize_data(data)
+  % Normalizes the deficit and half width of a velocity deficit measurement
+  %  params:
+  %  data -> struct from load_csv
+  %  returns:
+  %  normalized_deficit -> vector of deficit/max(deficit)
+  %  normalized_y       -> vector of y/half_width
+
   % pull out the requisite data
   airspeed = mean(data.airspeed);
   rho      = mean(data.atmo_density);

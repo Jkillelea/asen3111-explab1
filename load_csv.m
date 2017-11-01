@@ -1,5 +1,6 @@
 function data = load_csv(filename, R, C)
-  % load csv data with offsete of row = R, column = C
+  % load csv data into struct with offset of row = R, column = C
+  %   handles averaging the 10_000 data points down into 20
   raw_data = csvread(filename, R, C);
 
   % place into struct

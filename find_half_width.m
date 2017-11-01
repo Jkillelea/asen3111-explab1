@@ -1,5 +1,12 @@
 function [hw, y1, y2, d1, d2] = find_half_width(deficit, y)
-  % find the half width
+  % Finds the half width
+  %  params:
+  %  deficit -> vector of floats, velocity deficit
+  %  y       -> vector of floats, y position
+  %  returns:
+  %  hw      -> float, length of half width
+  %  y1, y2  -> floats, y positions of each side of half width
+  %  d1, d2, -> floats, values of the deficit (should be 1/2 * max(deficit))
   idx1 = find(deficit/max(deficit) > 0.5, 1, 'first');
   idx2 = find(deficit/max(deficit) > 0.5, 1, 'last');
 
