@@ -8,9 +8,12 @@ airfoils25  = dir('../data/*25*Airfoil*.csv');
 cylinders15 = dir('../data/*15*Cylinder*.csv');
 cylinders25 = dir('../data/*25*Cylinder*.csv');
 
+mu = 1.7894 * 10^-5; % kg/m s
+
 for files = {airfoils15, airfoils25, cylinders15, cylinders25}
   files   = cell2mat(files);
   Cd = zeros(1, length(files));
+  Re = zeros(1, length(files));
   for i = 1:length(files)
     filename = files(i).name;
     data     = load_csv(['../data/', filename], 1, 0);
@@ -29,6 +32,7 @@ for files = {airfoils15, airfoils25, cylinders15, cylinders25}
     end
 
     Cd(i) = -2/(airspeed^2 * chord) * trapz(y, (u.^2 - vinf.*u));
+    Re(i) = rho*airspeed*chord/mu;
   end
 
   % Generate a title
@@ -38,5 +42,5 @@ for files = {airfoils15, airfoils25, cylinders15, cylinders25}
     str = sprintf('Airfoil - %.0f m/s', airspeed);
   end
 
-  fprintf('%s - Cd = %f\n', str, mean(Cd));
+  fprintf('%s - Cd = %f, Re = %.0f\n', str, mean(Cd), mean(Re));
 end
