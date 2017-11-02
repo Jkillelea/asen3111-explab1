@@ -8,10 +8,10 @@ clc
 data_folder   = 'data/';
 graphs_folder = 'graphs/';
 
-airfoils15  = dir('data/*15*Airfoil*.csv');
-airfoils25  = dir('data/*25*Airfoil*.csv');
-cylinders15 = dir('data/*15*Cylinder*.csv');
-cylinders25 = dir('data/*25*Cylinder*.csv');
+airfoils15  = dir([data_folder, '*15*Airfoil*.csv']);
+airfoils25  = dir([data_folder, '*25*Airfoil*.csv']);
+cylinders15 = dir([data_folder, '*15*Cylinder*.csv']);
+cylinders25 = dir([data_folder, '*25*Cylinder*.csv']);
 
 % each set of data
 for files = {airfoils15, airfoils25, cylinders15, cylinders25}
@@ -21,7 +21,7 @@ for files = {airfoils15, airfoils25, cylinders15, cylinders25}
 
   for i = 1:length(files) % each file
     filename = files(i).name;
-    data     = load_csv(['data/', filename], 1, 0);
+    data     = load_csv([data_folder, filename], 1, 0);
 
     airspeed = mean(data.airspeed);
     rho      = mean(data.atmo_density);
