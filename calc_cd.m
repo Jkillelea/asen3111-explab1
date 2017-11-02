@@ -30,7 +30,7 @@ for files = {airfoils15, airfoils25, cylinders15, cylinders25}
 
     if contains(filename, 'Airfoil')
       chord = 8.89 / 100; % meters
-    elseif contains(filename, 'Cyilnder')
+    elseif contains(filename, 'Cylinder')
       chord = 1.27 / 100; % meters
     end
 
