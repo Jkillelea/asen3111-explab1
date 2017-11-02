@@ -2,16 +2,12 @@ clear
 clc
 close all
 
-graphs_folder = '../graphs/';
-data_folder   = '../data/';
+graphs_folder = 'graphs/';
+data_folder   = 'data/';
 airfoils15    = dir([data_folder, '*15*Airfoil*.csv']);
 airfoils25    = dir([data_folder, '*25*Airfoil*.csv']);
 cylinders15   = dir([data_folder, '*15*Cylinder*.csv']);
 cylinders25   = dir([data_folder, '*25*Cylinder*.csv']);
-[err, msg, msgid] = mkdir(graphs_folder);
-if err ~= 0
-  warning(msg)
-end
 
 for files = {airfoils15, airfoils25, cylinders15, cylinders25} % each data set
   f = figure; hold on; grid on;

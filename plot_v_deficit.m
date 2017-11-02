@@ -3,18 +3,15 @@ clear
 clc
 close all
 
+graphs_folder = 'graphs/';
+data_folder   = 'data/';
 % get filenames
-files = dir('../data/*.csv');
-graphs_folder = '../graphs/';
-[err, msg, msgid] = mkdir(graphs_folder);
-if err ~= 0
-  warning(msg)
-end
+files = dir([data_folder, '*.csv']);
 
 % plot the velocity deficit for each
 for i = 1:length(files)
   filename = files(i).name;
-  data = load_csv(['../data/', filename], 1, 0);
+  data = load_csv([data_folder, filename], 1, 0);
 
   % pull out the requisite data
   airspeed = mean(data.airspeed);
